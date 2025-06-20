@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IndexedDB từ JSON</title>
+</head>
+<body>
+  <h2>Danh sách từ JSON:</h2>
+  <ul id="userList"></ul>
+
+  <script>
+    const dbName = "MyDatabase";
+    const storeName = "User";
+
+    fetch('data.json') // Tải file JSON
+      .then(response => response.json())
+      .then(data => {
+        const request = indexedDB.open(dbName, 1);
+
+        request.onupgradeneeded = function (event) {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName, { keyPath: "id" });
+          }
+        };
+
+        request.onsuccess = function (event) {
+          const db = event.target.result;
+          const tx = db.transaction(storeName, "readwrite");
+          const store = tx.objectStore(storeName);
+
+          data.forEach(user => {
+            store.put(user);
+          });
+
+          tx.oncomplete = () => {
+            // Hiển thị lại dữ liệu
+            const readTx = db.transaction(storeName, "readonly");
+            const readStore = readTx.objectStore(storeName);
+            const getAllReq = readStore.getAll();
+
+            getAllReq.onsuccess = () => {
+              const ul = document.getElementById("userList");
+              getAllReq.result.forEach(user => {
+                const li = document.createElement("li");
+                li.textContent = `ID: ${user.id}, Name: ${user.name}`;
+                ul.appendChild(li);
+              });
+            };
+          };
+        };
+      });
+  </script>
+</body>
+</html>

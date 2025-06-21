@@ -12,19 +12,15 @@
         <tbody id="table-body"></tbody>
     </table>
     <script>
-        fetch("Weight_Type.json")
-  .then(response => response.json())
-  .then(data => {
-    let tableBody = '';
-    data.forEach(item => {
-      tableBody += `<tr>
-        <td>${item.Code}</td>
-        <td>${item.Name}</td>
-        <td>${item.Coefficient}</td>
-      </tr>`;
-    });
-    document.getElementById("weight_type_table").innerHTML = tableBody;
-  });
+        fetch('weight_type.json')
+            .then(response => response.json())
+            .then(data => {
+                let tbody = document.getElementById("table-body");
+                data.forEach(item => {
+                    let row = `<tr><td>{{item.Code}}</td><td>{{item.Name}}</td><td>{{item.Coefficient}}</td></tr>`;
+                    tbody.innerHTML += row.replace(/{{(.*?)}}/g, (_, key) => item[key.trim()]);
+                });
+            });
     </script>
 </body>
 </html>

@@ -19,7 +19,7 @@
             .then(data => {
                 let tbody = document.getElementById("table-body");
                 data.forEach(item => {
-                    let row = `<tr><td>{{item.Code}}</td><td>{{item.Name}}</td><td>{{item.Coefficient}}</td></tr>`;
+                    let row = `<tr><td>{{item.CoCode}}</td><td>{{item.CoName}}</td><td>{{item.CoCoefficient}}</td></tr>`;
                     tbody.innerHTML += row.replace(/{{(.*?)}}/g, (_, key) => item[key.trim()]);
                 });
             });

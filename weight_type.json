@@ -1,12 +1,4 @@
 [
-  {
-    "Code": "Gross",
-    "Name": "Gross weighing",
-    "Coefficient": 1
-  },
-  {
-    "Code": "Tare",
-    "Name": "Tare weighing",
-    "Coefficient": -1
-  }
+  { "Code": "Gross", "Name": "Gross weighing", "Coefficient": 1 },
+  { "Code": "Tare", "Name": "Tare weighing", "Coefficient": -1 }
 ]

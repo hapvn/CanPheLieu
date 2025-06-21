@@ -9,8 +9,8 @@
   <ul id="locationList"></ul>
 
   <h3>Thêm / Sửa Location</h3>
-  <input type="text" id="code" placeholder="Code" />
-  <input type="text" id="name" placeholder="Name" />
+  <input type="text" id="Code" placeholder="Code" />
+  <input type="text" id="Name" placeholder="Name" />
   <button onclick="addOrUpdate()">Thêm / Cập nhật</button>
   <button onclick="clearForm()">Xoá trắng</button>
 
@@ -71,13 +71,13 @@
     }
 
     function addOrUpdate() {
-      const code = document.getElementById("code").value.trim();
-      const name = document.getElementById("name").value.trim();
+      const code = document.getElementById("Code").value.trim();
+      const name = document.getElementById("Name").value.trim();
       if (!code || !name) return alert("Nhập đầy đủ Code và Name");
 
       const tx = db.transaction(storeName, "readwrite");
       const store = tx.objectStore(storeName);
-      store.put({ Code: code, Name: name });
+      store.put({ Code: Code, Name: Name });
       tx.oncomplete = () => {
         clearForm();
         displayData();
@@ -90,8 +90,8 @@
       const req = store.get(code);
       req.onsuccess = function () {
         if (req.result) {
-          document.getElementById("code").value = req.result.Code;
-          document.getElementById("name").value = req.result.Name;
+          document.getElementById("Code").value = req.result.Code;
+          document.getElementById("Name").value = req.result.Name;
         }
       };
     }
@@ -105,8 +105,8 @@
     }
 
     function clearForm() {
-      document.getElementById("code").value = "";
-      document.getElementById("name").value = "";
+      document.getElementById("Code").value = "";
+      document.getElementById("Name").value = "";
     }
   </script>
 </body>

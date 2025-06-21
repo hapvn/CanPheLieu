@@ -7,10 +7,12 @@
 </head>
 <body>
     <h2>Weight Type Table</h2>
-    <table border="1" id="data-table">
-        <thead><tr><th>Code</th><th>Name</th><th>Coefficient</th></tr></thead>
-        <tbody id="table-body"></tbody>
-    </table>
+    <table border="1">
+  <thead>
+    <tr><th>Code</th><th>Name</th><th>Coefficient</th></tr>
+  </thead>
+  <tbody id="weight_type_table"></tbody>
+</table>
     <script>
         fetch('weight_type.json')
             .then(response => response.json())

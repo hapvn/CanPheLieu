@@ -1,26 +1,55 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Manage Location</title>
+  <meta charset="UTF-8">
+  <title>IndexedDB từ JSON</title>
 </head>
 <body>
-    <h2>Location Table</h2>
-    <table border="1" id="data-table">
-        <thead><tr><th>Code</th><th>Name</th></tr></thead>
-        <tbody id="table-body"></tbody>
-    </table>
-    <script>
-        fetch('location.json')
-            .then(response => response.json())
-            .then(data => {
-                let tbody = document.getElementById("table-body");
-                data.forEach(item => {
-                    let row = `<tr><td>{{item.Code}}</td><td>{{item.Name}}</td></tr>`;
-                    tbody.innerHTML += row.replace(/{{(.*?)}}/g, (_, key) => item[key.trim()]);
-                });
-            });
-    </script>
+  <h2>Danh sách từ JSON:</h2>
+  <ul id="userList"></ul>
+
+  <script>
+    const dbName = "MyDatabase";
+    const storeName = "location";  
+
+    fetch('data.json') // Tải file JSON
+      .then(response => response.json())
+      .then(data => {
+        const request = indexedDB.open(dbName, 1);
+
+        request.onupgradeneeded = function (event) {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName, { keyPath: "code" });
+          }
+        };
+
+        request.onsuccess = function (event) {
+          const db = event.target.result;
+          const tx = db.transaction(storeName, "readwrite");
+          const store = tx.objectStore(storeName);
+
+          data.forEach(user => {
+            store.put(user);
+          });
+
+          tx.oncomplete = () => {
+            // Hiển thị lại dữ liệu
+            const readTx = db.transaction(storeName, "readonly");
+            const readStore = readTx.objectStore(storeName);
+            const getAllReq = readStore.getAll();
+
+            getAllReq.onsuccess = () => {
+              const ul = document.getElementById("userList");
+              getAllReq.result.forEach(user => {
+                const li = document.createElement("li");
+                li.textContent = `Code: ${user.code}, Name: ${user.name}`;
+                ul.appendChild(li);
+              });
+            };
+          };
+        };
+      });
+  </script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+[
+  {
+    "ID": 1,
+    "Location": "CC",
+    "NumberOf": 1,
+    "Date": "2025-06-13",
+    "Time": "11:00:29",
+    "ComputerName": "PC01",
+    "ScrapMaterial": "001",
+    "Weight_Type": "Gross",
+    "Weight": 949.0,
+    "NotUse": false,
+    "Status": "Draft",
+    "Reason": "Can Loi"
+  },
+  {
+    "ID": 2,
+    "Location": "CC",
+    "NumberOf": 2,
+    "Date": "2025-06-13",
+    "Time": "11:00:46",
+    "ComputerName": "PC01",
+    "ScrapMaterial": "001",
+    "Weight_Type": "Tare",
+    "Weight": -160.0,
+    "NotUse": false,
+    "Status": "Draft",
+    "Reason": "Can Loi"
+  }
+]

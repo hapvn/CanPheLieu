@@ -1,0 +1,12 @@
+[
+  {
+    "Code": "001",
+    "Name": "Sắt",
+    "Unit_Weight": 10.5
+  },
+  {
+    "Code": "002",
+    "Name": "Đồng",
+    "Unit_Weight": 8.2
+  }
+]

@@ -23,7 +23,13 @@
             db.createObjectStore(storeName, { keyPath: "code" });
           }
         };
+request.onerror = function (event) {
+  console.error("Database error:", event.target.errorCode);
+};
 
+getAllReq.onerror = function (event) {
+  console.error("Get all error:", event.target.errorCode);
+};
         request.onsuccess = function (event) {
           const db = event.target.result;
           const tx = db.transaction(storeName, "readwrite");

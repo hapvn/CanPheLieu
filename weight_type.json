@@ -1,4 +1,0 @@
-[
-  { "CoCode": "Gross", "CoName": "Gross weighing", "CoCoefficient": 1 },
-  { "CoCode": "Tare", "CoName": "Tare weighing", "CoCoefficient": -1 }
-]

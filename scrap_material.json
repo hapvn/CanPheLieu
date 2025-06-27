@@ -1,0 +1,17 @@
+[
+  {
+    "code": "001",
+    "name": "Sắt",
+    "unit_weight": "Kg"
+  },
+  {
+    "code": "002",
+    "name": "Nhôm",
+    "unit_weight": "Kg"
+  },
+  {
+    "code": "003",
+    "name": "Nhựa",
+    "unit_weight": "Kg"
+  }
+]

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý loại cân</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        input, button {
+            margin: 5px;
+            padding: 5px;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .nav-container {
+            margin-bottom: 20px;
+        }
+        .nav-container a {
+            display: inline-block;
+            padding: 10px;
+            background-color: #f2f2f2;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+        .nav-container a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2>Quản lý loại cân</h2>
+    <div class="nav-container">
+        <a href="/index.html">Về trang chủ</a>
+    </div>
+    
+    <div class="form-container">
+        <input type="text" id="code" placeholder="Mã loại cân (tối đa 10 ký tự)" maxlength="10">
+        <div id="codeError" class="error"></div>
+        <input type="text" id="name" placeholder="Tên loại cân">
+        <div id="nameError" class="error"></div>
+        <input type="number" id="coefficient" placeholder="Hệ số (số thực)" step="any">
+        <div id="coefficientError" class="error"></div>
+        <button onclick="addWeightType()">Thêm</button>
+        <button onclick="updateWeightType()" id="updateBtn" style="display: none;">Cập nhật</button>
+        <button onclick="resetForm()">Hủy</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Hệ số</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="weightTypeTable"></tbody>
+    </table>
+
+    <script>
+        let weightTypes = [];
+        let currentEditCode = null;
+
+        // Load dữ liệu từ file JSON
+        async function loadWeightTypes() {
+            try {
+                const response = await fetch('weight_type.json');
+                if (!response.ok) throw new Error('Network response was not ok');
+                weightTypes = await response.json();
+                displayWeightTypes();
+            } catch (error) {
+                console.error('Error loading weight types:', error);
+                alert('Không thể tải danh sách loại cân!');
+            }
+        }
+
+        // Hiển thị danh sách loại cân
+        function displayWeightTypes() {
+            const tableBody = document.getElementById('weightTypeTable');
+            tableBody.innerHTML = '';
+            weightTypes.forEach(weightType => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${weightType.Code}</td>
+                    <td>${weightType.Name}</td>
+                    <td>${weightType.Coefficient}</td>
+                    <td>
+                        <button onclick="editWeightType('${weightType.Code}')">Sửa</button>
+                        
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Validate form
+        function validateForm(code, name, coefficient) {
+            let isValid = true;
+            const codeError = document.getElementById('codeError');
+            const nameError = document.getElementById('nameError');
+            const coefficientError = document.getElementById('coefficientError');
+            codeError.textContent = '';
+            nameError.textContent = '';
+            coefficientError.textContent = '';
+
+            if (!code || code.trim() === '' || code.length > 10) {
+                codeError.textContent = 'Mã phải từ 1 đến 10 ký tự!';
+                isValid = false;
+            } else if (weightTypes.some(wt => wt.Code.toUpperCase() === code.toUpperCase() && code.toUpperCase() !== currentEditCode)) {
+                codeError.textContent = 'Mã đã tồn tại!';
+                isValid = false;
+            }
+
+            if (!name || name.trim() === '') {
+                nameError.textContent = 'Tên không được để trống!';
+                isValid = false;
+            }
+
+            if (coefficient === '' || isNaN(coefficient)) {
+                coefficientError.textContent = 'Hệ số phải là số thực!';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Thêm loại cân
+        async function addWeightType() {
+            const code = document.getElementById('code').value.trim().toUpperCase();
+            const name = document.getElementById('name').value.trim();
+            const coefficient = parseFloat(document.getElementById('coefficient').value);
+
+            if (validateForm(code, name, coefficient)) {
+                weightTypes.push({ Code: code, Name: name, Coefficient: coefficient });
+                await saveWeightTypes();
+                displayWeightTypes();
+                resetForm();
+            }
+        }
+
+        // Sửa loại cân
+        function editWeightType(code) {
+            const weightType = weightTypes.find(wt => wt.Code.toUpperCase() === code.toUpperCase());
+            if (weightType) {
+                document.getElementById('code').value = weightType.Code;
+                document.getElementById('code').disabled = true;
+                document.getElementById('name').value = weightType.Name;
+                document.getElementById('coefficient').value = weightType.Coefficient;
+                document.getElementById('updateBtn').style.display = 'inline';
+                currentEditCode = weightType.Code.toUpperCase();
+            }
+        }
+
+        // Cập nhật loại cân
+        async function updateWeightType() {
+            const code = document.getElementById('code').value.trim().toUpperCase();
+            const name = document.getElementById('name').value.trim();
+            const coefficient = parseFloat(document.getElementById('coefficient').value);
+
+            if (validateForm(code, name, coefficient) && currentEditCode) {
+                const weightTypeIndex = weightTypes.findIndex(wt => wt.Code.toUpperCase() === currentEditCode);
+                if (weightTypeIndex !== -1) {
+                    weightTypes[weightTypeIndex] = { Code: code, Name: name, Coefficient: coefficient };
+                    await saveWeightTypes();
+                    displayWeightTypes();
+                    resetForm();
+                } else {
+                    alert('Loại cân không tồn tại!');
+                }
+            }
+        }
+
+        // Xóa loại cân
+        async function deleteWeightType(code) {
+            if (confirm('Bạn có chắc muốn xóa loại cân này?')) {
+                weightTypes = weightTypes.filter(wt => wt.Code.toUpperCase() !== code.toUpperCase());
+                await saveWeightTypes();
+                displayWeightTypes();
+            }
+        }
+
+        // Lưu dữ liệu vào file JSON
+        async function saveWeightTypes() {
+            try {
+                const response = await fetch('weight_type.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(weightTypes, null, 2)
+                });
+                if (!response.ok) throw new Error('Failed to save weight types');
+            } catch (error) {
+                console.error('Error saving weight types:', error);
+                alert('Không thể lưu danh sách loại cân!');
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('code').value = '';
+            document.getElementById('code').disabled = false;
+            document.getElementById('name').value = '';
+            document.getElementById('coefficient').value = '';
+            document.getElementById('codeError').textContent = '';
+            document.getElementById('nameError').textContent = '';
+            document.getElementById('coefficientError').textContent = '';
+            document.getElementById('updateBtn').style.display = 'none';
+            currentEditCode = null;
+        }
+
+        // Load dữ liệu khi trang được tải
+        window.onload = loadWeightTypes;
+    </script>
+</body>
+</html>

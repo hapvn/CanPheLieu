@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý vật liệu phế liệu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        input, select, button {
+            margin: 5px;
+            padding: 5px;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .nav-container {
+            margin-bottom: 20px;
+        }
+        .nav-container a {
+            display: inline-block;
+            padding: 10px;
+            background-color: #f2f2f2;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+        .nav-container a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2>Quản lý vật liệu phế liệu</h2>
+    <div class="nav-container">
+        <a href="/index.html">Về trang chủ</a>
+    </div>
+    
+    <div class="form-container">
+        <input type="text" id="code" placeholder="Mã vật liệu (3 ký tự)" maxlength="3">
+        <div id="codeError" class="error"></div>
+        <input type="text" id="name" placeholder="Tên vật liệu">
+        <div id="nameError" class="error"></div>
+        <select id="unit_weight">
+            <option value="">Chọn đơn vị</option>
+            <option value="Kg">Kg</option>
+            <option value="Tấn">Tấn</option>
+            <option value="Gram">Gram</option>
+        </select>
+        <div id="unitError" class="error"></div>
+        <button onclick="addMaterial()">Thêm</button>
+        <button onclick="updateMaterial()" id="updateBtn" style="display: none;">Cập nhật</button>
+        <button onclick="resetForm()">Hủy</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Đơn vị</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="materialTable"></tbody>
+    </table>
+
+    <script>
+        let materials = [];
+        let currentEditCode = null;
+
+        // Load dữ liệu từ file JSON
+        async function loadMaterials() {
+            try {
+                const response = await fetch('scrap_material.json');
+                if (!response.ok) throw new Error('Network response was not ok');
+                materials = await response.json();
+                displayMaterials();
+            } catch (error) {
+                console.error('Error loading materials:', error);
+                alert('Không thể tải danh sách vật liệu!');
+            }
+        }
+
+        // Hiển thị danh sách vật liệu
+        function displayMaterials() {
+            const tableBody = document.getElementById('materialTable');
+            tableBody.innerHTML = '';
+            materials.forEach(material => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${material.code}</td>
+                    <td>${material.name}</td>
+                    <td>${material.unit_weight}</td>
+                    <td>
+                        <button onclick="editMaterial('${material.code}')">Sửa</button>
+                        
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Validate form
+        function validateForm(code, name, unit_weight) {
+            let isValid = true;
+            const codeError = document.getElementById('codeError');
+            const nameError = document.getElementById('nameError');
+            const unitError = document.getElementById('unitError');
+            codeError.textContent = '';
+            nameError.textContent = '';
+            unitError.textContent = '';
+
+            if (!code || code.length !== 3) {
+                codeError.textContent = 'Mã phải có đúng 3 ký tự!';
+                isValid = false;
+            } else if (materials.some(mat => mat.code.toUpperCase() === code.toUpperCase() && code.toUpperCase() !== currentEditCode)) {
+                codeError.textContent = 'Mã đã tồn tại!';
+                isValid = false;
+            }
+
+            if (!name || name.trim() === '') {
+                nameError.textContent = 'Tên không được để trống!';
+                isValid = false;
+            }
+
+            if (!unit_weight) {
+                unitError.textContent = 'Vui lòng chọn đơn vị!';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Thêm vật liệu
+        async function addMaterial() {
+            const code = document.getElementById('code').value.toUpperCase();
+            const name = document.getElementById('name').value.trim();
+            const unit_weight = document.getElementById('unit_weight').value;
+
+            if (validateForm(code, name, unit_weight)) {
+                materials.push({ code: code, name: name, unit_weight: unit_weight });
+                await saveMaterials();
+                displayMaterials();
+                resetForm();
+            }
+        }
+
+        // Sửa vật liệu
+        function editMaterial(code) {
+            const material = materials.find(mat => mat.code.toUpperCase() === code.toUpperCase());
+            if (material) {
+                document.getElementById('code').value = material.code;
+                document.getElementById('code').disabled = true;
+                document.getElementById('name').value = material.name;
+                document.getElementById('unit_weight').value = material.unit_weight;
+                document.getElementById('updateBtn').style.display = 'inline';
+                currentEditCode = material.code.toUpperCase();
+            }
+        }
+
+        // Cập nhật vật liệu
+        async function updateMaterial() {
+            const code = document.getElementById('code').value.toUpperCase();
+            const name = document.getElementById('name').value.trim();
+            const unit_weight = document.getElementById('unit_weight').value;
+
+            if (validateForm(code, name, unit_weight) && currentEditCode) {
+                const materialIndex = materials.findIndex(mat => mat.code.toUpperCase() === currentEditCode);
+                if (materialIndex !== -1) {
+                    materials[materialIndex] = { code: code, name: name, unit_weight: unit_weight };
+                    await saveMaterials();
+                    displayMaterials();
+                    resetForm();
+                } else {
+                    alert('Vật liệu không tồn tại!');
+                }
+            }
+        }
+
+        // Xóa vật liệu
+        async function deleteMaterial(code) {
+            if (confirm('Bạn có chắc muốn xóa vật liệu này?')) {
+                materials = materials.filter(mat => mat.code.toUpperCase() !== code.toUpperCase());
+                await saveMaterials();
+                displayMaterials();
+            }
+        }
+
+        // Lưu dữ liệu vào file JSON
+        async function saveMaterials() {
+            try {
+                const response = await fetch('scrap_material.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(materials, null, 2)
+                });
+                if (!response.ok) throw new Error('Failed to save materials');
+            } catch (error) {
+                console.error('Error saving materials:', error);
+                alert('Không thể lưu danh sách vật liệu!');
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('code').value = '';
+            document.getElementById('code').disabled = false;
+            document.getElementById('name').value = '';
+            document.getElementById('unit_weight').value = '';
+            document.getElementById('codeError').textContent = '';
+            document.getElementById('nameError').textContent = '';
+            document.getElementById('unitError').textContent = '';
+            document.getElementById('updateBtn').style.display = 'none';
+            currentEditCode = null;
+        }
+
+        // Load dữ liệu khi trang được tải
+        window.onload = loadMaterials;
+    </script>
+</body>
+</html>

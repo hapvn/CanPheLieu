@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý địa điểm</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        input, button {
+            margin: 5px;
+            padding: 5px;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .nav-container {
+            margin-bottom: 20px;
+        }
+        .nav-container a {
+            display: inline-block;
+            padding: 10px;
+            background-color: #f2f2f2;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+        .nav-container a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2>Quản lý địa điểm</h2>
+    <div class="nav-container">
+        <a href="/index.html">Về trang chủ</a>
+    </div>
+    
+    <div class="form-container">
+        <input type="text" id="code" placeholder="Mã địa điểm (tối đa 10 ký tự)" maxlength="10">
+        <div id="codeError" class="error"></div>
+        <input type="text" id="name" placeholder="Tên địa điểm">
+        <div id="nameError" class="error"></div>
+        <button onclick="addLocation()">Thêm</button>
+        <button onclick="updateLocation()" id="updateBtn" style="display: none;">Cập nhật</button>
+        <button onclick="resetForm()">Hủy</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="locationTable"></tbody>
+    </table>
+
+    <script>
+        let locations = [];
+        let currentEditCode = null;
+
+        // Load dữ liệu từ file JSON
+        async function loadLocations() {
+            try {
+                const response = await fetch('location.json');
+                if (!response.ok) throw new Error('Network response was not ok');
+                locations = await response.json();
+                displayLocations();
+            } catch (error) {
+                console.error('Error loading locations:', error);
+                alert('Không thể tải danh sách địa điểm!');
+            }
+        }
+
+        // Hiển thị danh sách địa điểm
+        function displayLocations() {
+            const tableBody = document.getElementById('locationTable');
+            tableBody.innerHTML = '';
+            locations.forEach(location => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${location.code}</td>
+                    <td>${location.name}</td>
+                    <td>
+                        <button onclick="editLocation('${location.code}')">Sửa</button>
+                        
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Validate form
+        function validateForm(code, name) {
+            let isValid = true;
+            const codeError = document.getElementById('codeError');
+            const nameError = document.getElementById('nameError');
+            codeError.textContent = '';
+            nameError.textContent = '';
+
+            if (!code || code.trim() === '' || code.length > 10) {
+                codeError.textContent = 'Mã phải từ 1 đến 10 ký tự!';
+                isValid = false;
+            } else if (locations.some(loc => loc.code.toUpperCase() === code.toUpperCase() && code.toUpperCase() !== currentEditCode)) {
+                codeError.textContent = 'Mã đã tồn tại!';
+                isValid = false;
+            }
+
+            if (!name || name.trim() === '') {
+                nameError.textContent = 'Tên không được để trống!';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Thêm địa điểm
+        async function addLocation() {
+            const code = document.getElementById('code').value.toUpperCase();
+            const name = document.getElementById('name').value.trim();
+
+            if (validateForm(code, name)) {
+                locations.push({ code: code, name: name });
+                await saveLocations();
+                displayLocations();
+                resetForm();
+            }
+        }
+
+        // Sửa địa điểm
+        function editLocation(code) {
+            const location = locations.find(loc => loc.code.toUpperCase() === code.toUpperCase());
+            if (location) {
+                document.getElementById('code').value = location.code;
+                document.getElementById('code').disabled = true;
+                document.getElementById('name').value = location.name;
+                document.getElementById('updateBtn').style.display = 'inline';
+                currentEditCode = location.code.toUpperCase();
+            }
+        }
+
+        // Cập nhật địa điểm
+        async function updateLocation() {
+            const code = document.getElementById('code').value.toUpperCase();
+            const name = document.getElementById('name').value.trim();
+
+            if (validateForm(code, name) && currentEditCode) {
+                const locationIndex = locations.findIndex(loc => loc.code.toUpperCase() === currentEditCode);
+                if (locationIndex !== -1) {
+                    locations[locationIndex] = { code: code, name: name };
+                    await saveLocations();
+                    displayLocations();
+                    resetForm();
+                } else {
+                    alert('Địa điểm không tồn tại!');
+                }
+            }
+        }
+
+        // Xóa địa điểm
+        async function deleteLocation(code) {
+            if (confirm('Bạn có chắc muốn xóa địa điểm này?')) {
+                locations = locations.filter(loc => loc.code.toUpperCase() !== code.toUpperCase());
+                await saveLocations();
+                displayLocations();
+            }
+        }
+
+        // Lưu dữ liệu vào file JSON
+        async function saveLocations() {
+            try {
+                const response = await fetch('location.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(locations, null, 2)
+                });
+                if (!response.ok) throw new Error('Failed to save locations');
+            } catch (error) {
+                console.error('Error saving locations:', error);
+                alert('Không thể lưu danh sách địa điểm!');
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('code').value = '';
+            document.getElementById('code').disabled = false;
+            document.getElementById('name').value = '';
+            document.getElementById('codeError').textContent = '';
+            document.getElementById('nameError').textContent = '';
+            document.getElementById('updateBtn').style.display = 'none';
+            currentEditCode = null;
+        }
+
+        // Load dữ liệu khi trang được tải
+        window.onload = loadLocations;
+    </script>
+</body>
+</html>

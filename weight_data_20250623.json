@@ -1,0 +1,67 @@
+[
+  {
+    "Seq": 1,
+    "Weighing": 1,
+    "Scrap_categories": "Giấy phế liệu (Carton)",
+    "WeightType": "Gross weighing",
+    "Weight": 706,
+    "Time": "2025-06-23T17:42:51",
+    "Status": "Complete",
+    "Remark": "",
+    "MachineCode": "BD",
+    "Location": "Bình Dương",
+    "BatchID": "2025-06-23-01"
+  },
+  {
+    "Seq": 1,
+    "Weighing": 2,
+    "Scrap_categories": "Giấy phế liệu (Carton)",
+    "WeightType": "Gross weighing",
+    "Weight": 706,
+    "Time": "2025-06-23T17:42:54",
+    "Status": "Complete",
+    "Remark": "",
+    "MachineCode": "BD",
+    "Location": "Bình Dương",
+    "BatchID": "2025-06-23-01"
+  },
+  {
+    "Seq": 1,
+    "Weighing": 3,
+    "Scrap_categories": "Giấy phế liệu (Carton)",
+    "WeightType": "Gross weighing",
+    "Weight": 706,
+    "Time": "2025-06-23T17:42:55",
+    "Status": "Complete",
+    "Remark": "",
+    "MachineCode": "BD",
+    "Location": "Bình Dương",
+    "BatchID": "2025-06-23-01"
+  },
+  {
+    "Seq": 1,
+    "Weighing": 4,
+    "Scrap_categories": "Giấy phế liệu (Carton)",
+    "WeightType": "Gross weighing",
+    "Weight": 706,
+    "Time": "2025-06-23T17:42:56",
+    "Status": "Complete",
+    "Remark": "",
+    "MachineCode": "BD",
+    "Location": "Bình Dương",
+    "BatchID": "2025-06-23-01"
+  },
+  {
+    "Seq": 1,
+    "Weighing": 1,
+    "Scrap_categories": "Giấy phế liệu (Carton)",
+    "WeightType": "Tare weighing",
+    "Weight": -533,
+    "Time": "2025-06-23T17:43:00",
+    "Status": "Complete",
+    "Remark": "",
+    "MachineCode": "BD",
+    "Location": "Bình Dương",
+    "BatchID": "2025-06-23-01"
+  }
+]
